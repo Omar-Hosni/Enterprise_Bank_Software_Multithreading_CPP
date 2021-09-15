@@ -32,12 +32,10 @@ public:
 
 	void transfer(bank_account& from, bank_account& to, double amount) {
 		
-		lock_guard<mutex> lg_1(from.m);
-		cout << "lock for " << from.name << " account acquire by " << this_thread::get_id() << endl;
-		this_thread::sleep_for(chrono::milliseconds(1000));
+		unique_lock<mutex> ul_1(from.m, defer_lock);
+		unique_lock<mutex> ul_2(to.m, defer_lock);
+		lock(ul_1, ul_2);
 
-		cout << "waiting to acquire lock for " << to.name << " account by " << this_thread::get_id() << endl;
-		lock_guard<mutex> lg_2(to.m);
 		
 		from.balance -= amount;
 		to.balance += amount;
@@ -69,9 +67,25 @@ void m2_first_m1_second() {
 	cout << "thread " << this_thread::get_id() << " has acquired lock for m1 mutex" << endl;
 }
 
+void x_operation() {
+	cout << "this is some operation\n";
+}
+
+void y_operation() {
+	cout << "this is some other operations \n";
+}
+
+unique_lock<mutex>get_lock() {
+	mutex m;
+	unique_lock<mutex> ul(m);
+	x_operation();
+	return ul;
+}
 
 int main() {
 
+	//uncomment whatever you want to execute
+	// 
 	//run_code_1
 	bank_account account;
 
@@ -87,11 +101,15 @@ int main() {
 	//thread2.join();
 
 	//run_code_2
-	thread thread3(m1_first_m2_second);
+	//thread thread3(m1_first_m2_second);
 	thread thread4(m2_first_m1_second);
 
-	thread3.join();
-	thread4.join();
+	//thread3.join();
+	//thread4.join();
+
+	//run_code_3
+	unique_lock<mutex> ul(get_lock());
+	y_operation();
 
 	return 0;
 }
