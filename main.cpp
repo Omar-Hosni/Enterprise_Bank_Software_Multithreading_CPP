@@ -28,6 +28,7 @@ public:
 	void deposit(double amount) {
 		lock_guard<mutex> lg(m);
 		balance += amount;
+
 	}
 
 	void transfer(bank_account& from, bank_account& to, double amount) {
